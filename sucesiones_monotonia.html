@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monotonía de Sucesiones - L.D.I. IVº Medio</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            startup: { typeset: true }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Layout estricto antidesbordamiento */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .slide {
+            display: none;
+            height: 100%;
+            width: 100%;
+            animation: fadeIn 0.4s ease-out;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom scrollbar para la práctica extensa */
+        .scrollable-content::-webkit-scrollbar { width: 10px; }
+        .scrollable-content::-webkit-scrollbar-track { background: #fff1f2; border-radius: 6px; }
+        .scrollable-content::-webkit-scrollbar-thumb { background: #fda4af; border-radius: 6px; border: 2px solid #fff1f2; }
+        .scrollable-content::-webkit-scrollbar-thumb:hover { background: #fb7185; }
+
+        @keyframes drawArc { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+        .anim-arc { stroke-dasharray: 1000; animation: drawArc 2s ease-out forwards; }
+
+        @keyframes fadeText { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .anim-text { opacity: 0; animation: fadeText 1s ease-out forwards; }
+
+        .point-anim { opacity: 0; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transform-origin: center; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+
+        .limit-anim { opacity: 0; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawLine 1.5s ease-in-out forwards; }
+        @keyframes drawLine { to { opacity: 1; stroke-dashoffset: 0; } }
+    </style>
+</head>
+
+<body class="text-slate-800 select-none h-screen w-screen flex flex-col bg-slate-50">
+
+    <div class="h-4 w-full bg-rose-800 shrink-0"></div>
+
+    <div id="slide-container" class="flex-1 relative w-full overflow-hidden">
+
+        <!-- Diapositiva 1: Portada -->
+        <div class="slide active p-10 bg-slate-50">
+            <div class="flex-1 flex flex-col items-center justify-center space-y-8 w-full h-full">
+                <i data-lucide="trending-up" class="w-48 h-48 text-rose-800 opacity-90"></i>
+                <h1 class="text-7xl font-extrabold tracking-tight text-slate-900 uppercase">
+                    Dinámica de Sucesiones
+                </h1>
+                <p class="text-5xl text-slate-500 font-light tracking-wide">
+                    Crecimiento, Decrecimiento y Monotonía
+                </p>
+
+                <div class="mt-16 p-8 glass-card rounded-2xl border-l-8 border-rose-800 text-left w-full max-w-5xl flex justify-between items-end">
+                    <div>
+                        <p class="text-4xl font-bold text-slate-900">Prof. Luis Quezada</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-bold text-rose-800 uppercase tracking-wider">SEK CHILE • IVº ELECTIVO</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 2: Problema Introductorio -->
+        <div class="slide bg-white p-10">
+            <div class="flex items-center gap-6 mb-6 border-b-4 border-slate-100 pb-4 shrink-0">
+                <i data-lucide="activity" class="w-16 h-16 text-rose-800"></i>
+                <h2 class="text-6xl font-bold text-slate-800">Inversión vs Depreciación</h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-12 flex-1 min-h-0 items-center">
+                <div class="space-y-6 h-full flex flex-col justify-center pr-4">
+                    <p class="text-3xl font-light text-slate-700 leading-relaxed">
+                        Imaginemos el valor de dos modelos financieros año tras año. 
+                        El primer modelo representa una inversión inicial que gana intereses periódicos. 
+                        El segundo modelo representa la adquisición de un vehículo que se deprecia con el tiempo y el uso.
+                    </p>
+                    <div class="glass-card p-6 rounded-xl border-l-8 border-slate-800 shadow-md">
+                        <p class="text-2xl text-slate-800 leading-snug font-medium">
+                            ¿Qué caracteriza algebraicamente al modelo que aumenta sostenidamente su valor frente al que siempre disminuye?
+                        </p>
+                    </div>
+                    <button onclick="revelarElemento('concepto-gancho')"
+                        class="mt-4 px-8 py-4 bg-slate-800 text-white rounded-xl text-2xl font-bold hover:bg-slate-700 transition shadow-lg w-max">
+                        <i data-lucide="eye" class="inline-block w-6 h-6 mr-3 mb-1"></i> Análisis de Tendencia
+                    </button>
+
+                    <div id="concepto-gancho" class="hidden p-6 bg-rose-50 border-l-8 border-rose-600 rounded-r-xl shadow-inner">
+                        <p class="text-2xl text-rose-800 leading-relaxed">
+                            Si comparamos el valor actual con el futuro inmediato, en el primer caso siempre se cumple que <strong class="text-emerald-700">$a_{n+1} > a_n$ (Crece)</strong>, y en el segundo caso se cumple siempre que <strong class="text-red-700">$a_{n+1} < a_n$ (Decrece)</strong>. A la preservación de ese orden se le llama <strong>Monotonía</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="h-full w-full flex items-center justify-center bg-slate-50 rounded-3xl border-2 border-slate-200 p-8 shadow-inner overflow-hidden relative">
+                    <svg viewBox="0 0 500 300" class="w-full h-full max-h-[400px]">
+                        <!-- Ejes -->
+                        <line x1="50" y1="250" x2="480" y2="250" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="50" y1="250" x2="50" y2="30" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+                        <text x="470" y="270" font-size="14" font-weight="bold" fill="#64748b">Tiempo (n)</text>
+                        <text x="10" y="20" font-size="14" font-weight="bold" fill="#64748b">Valor</text>
+
+                        <!-- Puntos de Crecimiento (Modelo 1) -->
+                        <circle cx="100" cy="220" r="7" fill="#10b981" class="point-anim" style="animation-delay: 0.5s;"/>
+                        <line x1="100" y1="220" x2="160" y2="180" stroke="#34d399" stroke-width="3" stroke-dasharray="6,4" class="anim-arc" style="animation-delay: 1s;"/>
+                        <circle cx="160" cy="180" r="7" fill="#10b981" class="point-anim" style="animation-delay: 1.5s;"/>
+                        <line x1="160" y1="180" x2="220" y2="135" stroke="#34d399" stroke-width="3" stroke-dasharray="6,4" class="anim-arc" style="animation-delay: 2s;"/>
+                        <circle cx="220" cy="135" r="7" fill="#10b981" class="point-anim" style="animation-delay: 2.5s;"/>
+                        <line x1="220" y1="135" x2="280" y2="80" stroke="#34d399" stroke-width="3" stroke-dasharray="6,4" class="anim-arc" style="animation-delay: 3s;"/>
+                        <circle cx="280" cy="80" r="7" fill="#10b981" class="point-anim" style="animation-delay: 3.5s;"/>
+                        <text x="300" y="70" font-size="18" font-weight="bold" fill="#10b981" class="anim-text" style="animation-delay: 4s;">Inversión</text>
+
+                        <!-- Puntos de Decrecimiento (Modelo 2) -->
+                        <circle cx="100" cy="50" r="7" fill="#ef4444" class="point-anim" style="animation-delay: 0.5s;"/>
+                        <line x1="100" y1="50" x2="160" y2="100" stroke="#f87171" stroke-width="3" stroke-dasharray="6,4" class="anim-arc" style="animation-delay: 1s;"/>
+                        <circle cx="160" cy="100" r="7" fill="#ef4444" class="point-anim" style="animation-delay: 1.5s;"/>
+                        <line x1="160" y1="100" x2="220" y2="150" stroke="#f87171" stroke-width="3" stroke-dasharray="6,4" class="anim-arc" style="animation-delay: 2s;"/>
+                        <circle cx="220" cy="150" r="7" fill="#ef4444" class="point-anim" style="animation-delay: 2.5s;"/>
+                        <line x1="220" y1="150" x2="280" y2="200" stroke="#f87171" stroke-width="3" stroke-dasharray="6,4" class="anim-arc" style="animation-delay: 3s;"/>
+                        <circle cx="280" cy="200" r="7" fill="#ef4444" class="point-anim" style="animation-delay: 3.5s;"/>
+                        <text x="300" y="210" font-size="18" font-weight="bold" fill="#ef4444" class="anim-text" style="animation-delay: 4s;">Depreciación</text>
+
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 3: Definiciones -->
+        <div class="slide bg-slate-50 p-10">
+            <div class="flex items-center gap-6 mb-6 border-b-4 border-slate-200 pb-4 shrink-0">
+                <i data-lucide="book-open" class="w-16 h-16 text-rose-800"></i>
+                <h2 class="text-6xl font-bold text-slate-800">Clasificación Monótona</h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-12 flex-1 min-h-0 items-center">
+                <div class="space-y-6 h-full flex flex-col justify-center">
+                    
+                    <div class="glass-card p-6 rounded-2xl border-l-8 border-emerald-500 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-3xl font-bold text-slate-900 mb-2">Estrictamente Creciente</p>
+                            <p class="text-xl text-slate-700">Avanzar al siguiente término siempre resulta en un valor mayor.</p>
+                        </div>
+                        <div class="text-3xl font-bold font-mono text-emerald-800 bg-emerald-50 p-4 rounded-xl">
+                            $a_{n+1} > a_n$
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl border-l-8 border-red-500 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-3xl font-bold text-slate-900 mb-2">Estrictamente Decreciente</p>
+                            <p class="text-xl text-slate-700">Avanzar al siguiente término siempre resulta en un valor menor.</p>
+                        </div>
+                        <div class="text-3xl font-bold font-mono text-red-800 bg-red-50 p-4 rounded-xl">
+                            $a_{n+1} < a_n$
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl border-l-8 border-slate-600 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-2xl font-bold text-slate-900 mb-2">Otras Clasificaciones</p>
+                            <p class="text-lg text-slate-700 leading-tight">
+                                <strong>Constante:</strong> Términos idénticos ($a_{n+1} = a_n$).<br><br>
+                                <strong>Alternante:</strong> Cambian de signo constantemente. No poseen monotonía (suben y bajan).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-full w-full flex flex-col justify-center items-center bg-white rounded-3xl border-2 border-slate-200 p-8 shadow-lg">
+                    <h3 class="text-3xl font-bold text-slate-500 mb-6 tracking-widest uppercase text-center border-b-2 border-slate-200 pb-4 w-full">Metodología de Prueba</h3>
+                    
+                    <div class="flex flex-col gap-8 w-full">
+                        <div class="bg-rose-50 p-6 rounded-xl border-l-4 border-rose-600 shadow-sm">
+                            <p class="text-2xl font-bold text-rose-800 mb-3"><i data-lucide="minus-square" class="inline w-6 h-6 mr-2"></i>La Prueba de la Diferencia</p>
+                            <p class="text-lg text-slate-700 mb-4">Restar el término actual al siguiente. El signo del resultado revela su naturaleza:</p>
+                            <div class="text-xl font-mono text-slate-800 flex justify-around">
+                                <span class="bg-white px-4 py-2 rounded shadow">$a_{n+1} - a_n > 0$ <span class="text-emerald-600 ml-2">Creciente</span></span>
+                                <span class="bg-white px-4 py-2 rounded shadow">$a_{n+1} - a_n < 0$ <span class="text-red-600 ml-2">Decreciente</span></span>
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-50 p-6 rounded-xl border-l-4 border-indigo-600 shadow-sm">
+                            <p class="text-2xl font-bold text-indigo-800 mb-3"><i data-lucide="divide-square" class="inline w-6 h-6 mr-2"></i>La Prueba de la Razón (si $a_n > 0$)</p>
+                            <p class="text-lg text-slate-700 mb-4">Dividir el siguiente término por el actual comparándolo con el $1$:</p>
+                            <div class="text-xl font-mono text-slate-800 flex justify-around">
+                                <span class="bg-white px-4 py-2 rounded shadow">$\frac{a_{n+1}}{a_n} > 1$ <span class="text-emerald-600 ml-2">Creciente</span></span>
+                                <span class="bg-white px-4 py-2 rounded shadow">$\frac{a_{n+1}}{a_n} < 1$ <span class="text-red-600 ml-2">Decreciente</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 4: Yo Hago -->
+        <div class="slide bg-white p-10">
+            <div class="flex items-center gap-6 mb-4 border-b-4 border-slate-100 pb-2 shrink-0">
+                <i class="w-14 h-14 text-rose-800" data-lucide="brain-circuit"></i>
+                <h2 class="text-5xl font-bold text-slate-800">Modelaje de Demostración</h2>
+            </div>
+
+            <div class="flex flex-col gap-4 shrink-0 mb-4 bg-slate-50 p-8 rounded-3xl border-2 border-slate-200">
+                <p class="text-2xl font-medium text-slate-800 leading-relaxed border-l-4 border-slate-400 pl-6 italic">
+                    "Dada la siguiente sucesión de origen racional. Utilice de forma cuidadosa la prueba de la diferencia para demostrar en pizarra si es estrictamente creciente, decreciente o ninguna de las anteriores."
+                </p>
+                <div class="text-5xl font-bold text-center text-slate-900 font-mono py-4">
+                    $$ a_n = \frac{n}{n+1} $$
+                </div>
+                <button onclick="revelarElemento('desarrollo-yo-hago')"
+                    class="px-8 py-3 w-max mx-auto bg-rose-800 text-white rounded-xl text-2xl font-bold hover:bg-rose-700 transition shadow-lg">
+                    Desarrollar Lógica en Pizarra
+                </button>
+            </div>
+
+            <div id="desarrollo-yo-hago" class="hidden flex-1 min-h-0 flex flex-col gap-4">
+                <div class="flex gap-4 flex-1 min-h-0">
+                    <div class="bg-slate-100 p-5 rounded-2xl border-l-8 border-slate-700 shadow-md flex-1">
+                        <p class="text-xl font-bold text-slate-800 mb-2">1. Estructura $a_{n+1}$</p>
+                        <p class="text-lg text-slate-600">Reemplazar "n" por "(n+1)":</p>
+                        <div class="text-2xl font-mono text-center text-slate-800 mt-2 bg-white rounded p-4">
+                            $$ a_{n+1} = \frac{(n+1)}{(n+1)+1} = \frac{n+1}{n+2} $$
+                        </div>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-5 rounded-2xl border-l-8 border-orange-500 shadow-md flex-[1.5]">
+                        <p class="text-xl font-bold text-slate-800 mb-2">2. Álgebra de Diferencia</p>
+                        <div class="text-xl font-mono text-center text-slate-800">
+                            $$ a_{n+1} - a_n = \frac{n+1}{n+2} - \frac{n}{n+1} $$
+                        </div>
+                        <div class="text-xl font-mono text-center text-slate-800 mt-2">
+                            M.C.M. en denominador:
+                            $$ \frac{(n+1)(n+1) - n(n+2)}{(n+2)(n+1)} $$
+                        </div>
+                    </div>
+                    
+                    <div class="bg-emerald-50 p-5 rounded-2xl border-l-8 border-emerald-600 shadow-md flex-[1.2] flex flex-col justify-center text-center">
+                        <p class="text-xl font-bold text-slate-800 mb-2">3. Conclusión de Signo</p>
+                        <p class="text-lg text-slate-600 mb-2">Expansión: $\frac{(n^2+2n+1) - (n^2+2n)}{(n+2)(n+1)}$</p>
+                        <div class="text-2xl font-mono text-emerald-900 border-t-2 border-emerald-200 pt-2 font-bold">
+                            $$ \frac{1}{(n+2)(n+1)} > 0 $$
+                        </div>
+                        <p class="text-lg font-bold uppercase text-emerald-700 mt-2 tracking-wide bg-emerald-200 py-1 rounded">Creciente Estricta</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 5: Práctica -->
+        <div class="slide bg-slate-50 p-8">
+            <div class="flex items-center gap-6 border-b-4 border-slate-200 pb-2 shrink-0">
+                <i data-lucide="edit-3" class="w-12 h-12 text-rose-800"></i>
+                <h2 class="text-4xl font-bold text-slate-800">Batería de Desafíos Analíticos</h2>
+            </div>
+
+            <div class="flex flex-col flex-1 min-h-0 space-y-4 mt-2">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm shrink-0">
+                    <p class="text-lg font-medium text-slate-800 text-center">
+                        <strong class="text-emerald-700">Analice y demuestre si las siguientes sucesiones son estrictamente crecientes, decrecientes o alternantes (no monótonas).</strong>
+                    </p>
+                </div>
+
+                <div class="scrollable-content flex-1 min-h-0 overflow-y-auto pr-3 pb-2 rounded-lg">
+                    <div class="grid grid-cols-3 gap-6">
+
+                        <!-- Grupo 1 -->
+                        <div class="flex flex-col gap-3">
+                            <div class="bg-slate-700 text-white p-3 rounded-t-xl text-center font-bold tracking-widest uppercase shadow">
+                                Enunciados Grupo A (Visual)
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 text-xl">A1</span> <span class="text-xl font-mono text-slate-800">$\displaystyle \{4, 8, 12, 16, \dots\} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 text-xl">A2</span> <span class="text-xl font-mono text-slate-800">$\displaystyle \{10, 5, 0, -5, \dots\} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 text-xl">A3</span> <span class="text-xl font-mono text-slate-800">$\displaystyle \{-1, 1, -1, 1, \dots\} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 text-xl">A4</span> <span class="text-xl font-mono text-slate-800">$\displaystyle \left\{\frac{1}{2}, \frac{1}{4}, \frac{1}{8}, \dots\right\} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 text-xl">A5</span> <span class="text-xl font-mono text-slate-800">$\displaystyle \{1, 4, 9, 16, \dots\} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 text-xl">A6</span> <span class="text-xl font-mono text-slate-800">$\displaystyle \{-2, -4, -8, -16, \dots\} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm border-b-4 border-slate-700">
+                                <span class="font-bold text-slate-400 text-xl">A7</span> <span class="text-xl font-mono text-slate-800">$\displaystyle \{1, 1, 1, 1, \dots\} $</span>
+                            </div>
+                        </div>
+
+                        <!-- Grupo 2 -->
+                        <div class="flex flex-col gap-3">
+                            <div class="bg-rose-700 text-white p-3 rounded-t-xl text-center font-bold tracking-widest uppercase shadow">
+                                Enunciados Grupo B (T. General)
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 text-xl">B1</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = 5n - 1 $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 text-xl">B2</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = 20 - 3n $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 text-xl">B3</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = n^2 + 1 $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 text-xl">B4</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = \frac{2}{n} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 text-xl">B5</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = 2^n $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 text-xl">B6</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = \frac{1}{2^n} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm border-b-4 border-rose-700">
+                                <span class="font-bold text-rose-300 text-xl">B7</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = n^3 - n $</span>
+                            </div>
+                        </div>
+
+                        <!-- Grupo 3 -->
+                        <div class="flex flex-col gap-3">
+                            <div class="bg-orange-600 text-white p-3 rounded-t-xl text-center font-bold tracking-widest uppercase shadow">
+                                Enunciados Grupo C (Complejos)
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-orange-300 text-xl">C1</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = \frac{2n-1}{3n+5} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-orange-300 text-xl">C2</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = (-1)^n \cdot n^2 $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-orange-300 text-xl">C3</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = \frac{n^2}{n^2+1} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-orange-300 text-xl">C4</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = 3 - \frac{1}{n} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-orange-300 text-xl">C5</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = \frac{n!}{2^n} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm">
+                                <span class="font-bold text-orange-300 text-xl">C6</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = \frac{\sin\left(\frac{n\pi}{2}\right)}{n} $</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex items-center justify-between shadow-sm border-b-4 border-orange-600">
+                                <span class="font-bold text-orange-300 text-xl">C7</span> <span class="text-xl font-mono text-slate-800">$\displaystyle a_n = \left(1 + \frac{1}{n}\right)^n $</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 6: Ticket Salida -->
+        <div class="slide bg-white p-10">
+            <div class="flex items-center gap-6 mb-8 border-b-4 border-slate-100 pb-4 shrink-0">
+                <i data-lucide="award" class="w-16 h-16 text-rose-800"></i>
+                <h2 class="text-6xl font-bold text-slate-800">Verificación Acumulativa</h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-16 flex-1 min-h-0 items-center">
+                <div class="space-y-10 pr-6">
+                    <div class="p-10 bg-slate-50 border-2 border-slate-200 rounded-3xl shadow-sm">
+                        <p class="text-2xl font-medium text-slate-800 leading-relaxed mb-6">
+                            Considere la siguiente estructura algorítmica y evalúe su comportamiento asintótico general:
+                        </p>
+                        <div class="text-4xl font-bold text-center text-slate-900 font-mono py-4">
+                            $$ a_n = -2n^2 + 8n $$
+                        </div>
+                        <p class="text-2xl font-medium text-slate-700 leading-relaxed mt-6">
+                            Al expandir esta sucesión hacia el infinito sobre $\mathbb{N}$, ¿cuál afirmación la describe con precisión absoluta?
+                        </p>
+                    </div>
+                    <div class="space-y-6 text-2xl font-bold text-slate-700 pl-6 leading-relaxed flex flex-col justify-center">
+                        <p class="p-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-transparent">A) Es estrictamente creciente para todo $n \in \mathbb{N}$.</p>
+                        <p class="p-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-transparent">B) Es una sucesión alternante.</p>
+                        <p class="p-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-transparent">C) Es monótona decreciente, pero solo a partir de $n=3$.</p>
+                        <p class="p-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-transparent">D) Todos sus términos son negativos.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col h-full justify-center space-y-10">
+                    <button onclick="revelarElemento('respuesta-paes')"
+                        class="px-10 py-6 bg-rose-800 text-white rounded-2xl text-4xl font-bold hover:bg-rose-900 transition shadow-xl w-full">
+                        Comprobar Respuesta
+                    </button>
+
+                    <div id="respuesta-paes"
+                        class="hidden flex-1 glass-card p-10 rounded-3xl border-4 border-emerald-500 bg-emerald-50 text-center flex flex-col justify-center shadow-lg">
+                        <h3 class="text-4xl font-extrabold text-slate-900 mb-6 flex justify-center items-center gap-6">
+                            <i data-lucide="check-circle" class="w-12 h-12 text-emerald-600"></i> Alternativa C
+                        </h3>
+                        <div class="text-xl text-slate-800 space-y-4 text-left pl-8 border-l-8 border-emerald-400 ml-6">
+                            <p class="leading-relaxed">Al evaluar la secuencia, obtenemos los términos: 
+                                <br><span class="font-mono bg-white px-2 py-1 rounded">$a_1 = 6$</span>
+                                <br><span class="font-mono bg-white px-2 py-1 rounded">$a_2 = 8$</span>
+                                <br><span class="font-mono bg-white px-2 py-1 rounded">$a_3 = 6$</span>
+                                <br><span class="font-mono bg-white px-2 py-1 rounded">$a_4 = 0$</span>
+                                <br><span class="font-mono bg-white px-2 py-1 rounded">$a_5 = -10 \dots$</span>
+                            </p>
+                            <p class="border-t-2 border-emerald-200 pt-4 leading-relaxed font-medium">
+                                Sube inicialmente del $a_1$ al $a_2$, pero a partir de $n=3$ ($a_3 > a_4 > a_5 \dots$) la sucesión pasa a ser <strong class="text-emerald-800 uppercase bg-emerald-100 px-2 py-1 rounded">monótona decreciente</strong> perdiendo valor irrevocablemente hacia el $-\infty$.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="h-20 w-full shrink-0 flex justify-between items-center px-12 bg-white border-t-2 border-slate-200 z-50">
+        <div class="text-slate-500 font-bold text-xl tracking-widest uppercase">
+            Límites, Derivadas e Integrales • IVº Medio
+        </div>
+        <div class="flex gap-6">
+            <button onclick="changeSlide(-1)" class="p-4 rounded-full bg-slate-100 border border-slate-300 shadow-md hover:bg-slate-200 transition-all"><i data-lucide="chevron-left" class="w-8 h-8 text-slate-800"></i></button>
+            <button onclick="changeSlide(1)" class="p-4 rounded-full bg-rose-800 text-white shadow-lg hover:bg-rose-900 transition-all"><i data-lucide="chevron-right" class="w-8 h-8"></i></button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function updateSlide() {
+            slides.forEach((s, i) => {
+                s.classList.remove('active');
+                if (i === currentSlide) s.classList.add('active');
+            });
+        }
+
+        function changeSlide(d) {
+            const n = currentSlide + d;
+            if (n >= 0 && n < slides.length) { currentSlide = n; updateSlide(); }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowRight', 'Space', 'Enter'].includes(e.key)) changeSlide(1);
+            if (['ArrowLeft', 'Backspace'].includes(e.key)) changeSlide(-1);
+        });
+
+        function revelarElemento(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                if (!el.classList.contains('flex') && !el.classList.contains('block')) {
+                    el.classList.add('flex');
+                }
+                if (window.MathJax) {
+                    MathJax.typesetPromise([el]).catch((err) => console.log(err.message));
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
