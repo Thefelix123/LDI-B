@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sucesiones Aritméticas - L.D.I. IVº Medio</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            startup: { typeset: true }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .slide {
+            display: none;
+            height: 100%;
+            width: 100%;
+            animation: fadeIn 0.4s ease-out;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .scrollable-content::-webkit-scrollbar { width: 10px; }
+        .scrollable-content::-webkit-scrollbar-track { background: #fff1f2; border-radius: 6px; }
+        .scrollable-content::-webkit-scrollbar-thumb { background: #fda4af; border-radius: 6px; border: 2px solid #fff1f2; }
+        .scrollable-content::-webkit-scrollbar-thumb:hover { background: #fb7185; }
+
+        .point-anim { opacity: 0; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; transform-origin: center; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+        
+        .line-anim { stroke-dasharray: 200; stroke-dashoffset: 200; animation: drawDash 1s ease-out forwards; }
+        @keyframes drawDash { to { stroke-dashoffset: 0; } }
+
+    </style>
+</head>
+
+<body class="text-slate-800 select-none h-screen w-screen flex flex-col bg-slate-50">
+
+    <div class="h-4 w-full bg-rose-800 shrink-0"></div>
+
+    <div id="slide-container" class="flex-1 relative w-full overflow-hidden">
+
+        <!-- Diapositiva 1: Portada -->
+        <div class="slide active p-10 bg-slate-50">
+            <div class="flex-1 flex flex-col items-center justify-center space-y-8 w-full h-full">
+                <i data-lucide="layers" class="w-48 h-48 text-rose-800 opacity-90"></i>
+                <h1 class="text-7xl font-extrabold tracking-tight text-slate-900 uppercase">
+                    Progresiones Aritméticas
+                </h1>
+                <p class="text-5xl text-slate-500 font-light tracking-wide">
+                    El Ritmo del Crecimiento Lineal
+                </p>
+
+                <div class="mt-16 p-8 glass-card rounded-2xl border-l-8 border-rose-800 text-left w-full max-w-5xl flex justify-between items-end">
+                    <div>
+                        <p class="text-4xl font-bold text-slate-900">Prof. Luis Quezada</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-bold text-rose-800 uppercase tracking-wider">SEK CHILE • IVº ELECTIVO</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 2: Gancho -->
+        <div class="slide bg-white p-10">
+            <div class="flex items-center gap-6 mb-6 border-b-4 border-slate-100 pb-4 shrink-0">
+                <i data-lucide="piggy-bank" class="w-16 h-16 text-rose-800"></i>
+                <h2 class="text-6xl font-bold text-slate-800">El Ahorro Constante</h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-12 flex-1 min-h-0 items-center">
+                <div class="space-y-6 h-full flex flex-col justify-center pr-4">
+                    <p class="text-3xl font-light text-slate-700 leading-relaxed">
+                        Un individuo decide iniciar un fondo de ahorro. Durante la <strong>primera semana</strong> deposita $20.000$. A partir de la semana siguiente, se compromete a ingresar <strong>exactamente $5.000$ adicionales</strong> cada semana para incrementar progresivamente sus aportes sin falla.
+                    </p>
+                    <div class="glass-card p-6 rounded-xl border-l-8 border-slate-800 shadow-md">
+                        <p class="text-2xl text-slate-800 leading-snug font-medium">
+                            ¿Cuál será el monto exacto de su depósito en la décima semana? ¿Existe un patrón estructural que enlace las semanas con el dinero depositado?
+                        </p>
+                    </div>
+                    <button onclick="revelarElemento('concepto-gancho')"
+                        class="mt-4 px-8 py-4 bg-slate-800 text-white rounded-xl text-2xl font-bold hover:bg-slate-700 transition shadow-lg w-max">
+                        <i data-lucide="eye" class="inline-block w-6 h-6 mr-3 mb-1"></i> Revelar la Estructura Lineal
+                    </button>
+
+                    <div id="concepto-gancho" class="hidden p-6 bg-rose-50 border-l-8 border-rose-600 rounded-r-xl shadow-inner">
+                        <p class="text-2xl text-rose-800 leading-relaxed">
+                            A este tipo de variación algorítmica se le conoce como <strong>Progresión Aritmética (P.A.)</strong>. Su clave no reside en los montos individuales, sino en el salto invariante entre ellos: la <strong>diferencia común ($d$)</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="h-full w-full flex items-center justify-center bg-slate-50 rounded-3xl border-2 border-slate-200 p-8 shadow-inner overflow-hidden relative">
+                    <svg viewBox="0 0 500 300" class="w-full h-full max-h-[400px]">
+                        <!-- Barras de Aportes -->
+                        <rect x="50" y="200" width="40" height="50" fill="#1e293b" class="point-anim" style="animation-delay: 0.2s;" />
+                        <text x="70" y="270" font-size="16" fill="#64748b" text-anchor="middle" font-weight="bold">Sem 1</text>
+                        <text x="70" y="190" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="bold">$20k</text>
+
+                        <rect x="150" y="150" width="40" height="100" fill="#334155" class="point-anim" style="animation-delay: 1.2s;" />
+                        <text x="170" y="270" font-size="16" fill="#64748b" text-anchor="middle" font-weight="bold">Sem 2</text>
+                        <text x="170" y="140" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="bold">$25k</text>
+
+                        <rect x="250" y="100" width="40" height="150" fill="#475569" class="point-anim" style="animation-delay: 2.2s;" />
+                        <text x="270" y="270" font-size="16" fill="#64748b" text-anchor="middle" font-weight="bold">Sem 3</text>
+                        <text x="270" y="90" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="bold">$30k</text>
+
+                        <rect x="350" y="50" width="40" height="200" fill="#64748b" class="point-anim" style="animation-delay: 3.2s;" />
+                        <text x="370" y="270" font-size="16" fill="#64748b" text-anchor="middle" font-weight="bold">Sem 4</text>
+                        <text x="370" y="40" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="bold">$35k</text>
+
+                        <!-- Diferencias/Saltos (+d) -->
+                        <path d="M 90 200 Q 120 160 150 150" fill="none" stroke="#e11d48" stroke-width="3" class="line-anim" style="animation-delay: 0.5s;" stroke-linecap="round"/>
+                        <circle cx="120" cy="180" r="14" fill="#e11d48" class="point-anim" style="animation-delay: 0.8s;" />
+                        <text x="120" y="184" font-size="12" fill="white" text-anchor="middle" font-weight="bold">+5k</text>
+
+                        <path d="M 190 150 Q 220 110 250 100" fill="none" stroke="#e11d48" stroke-width="3" class="line-anim" style="animation-delay: 1.5s;" stroke-linecap="round"/>
+                        <circle cx="220" cy="130" r="14" fill="#e11d48" class="point-anim" style="animation-delay: 1.8s;" />
+                        <text x="220" y="134" font-size="12" fill="white" text-anchor="middle" font-weight="bold">+5k</text>
+                        
+                        <path d="M 290 100 Q 320 60 350 50" fill="none" stroke="#e11d48" stroke-width="3" class="line-anim" style="animation-delay: 2.5s;" stroke-linecap="round"/>
+                        <circle cx="320" cy="80" r="14" fill="#e11d48" class="point-anim" style="animation-delay: 2.8s;" />
+                        <text x="320" y="84" font-size="12" fill="white" text-anchor="middle" font-weight="bold">+5k</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 3: Formalización -->
+        <div class="slide bg-slate-50 p-10">
+            <div class="flex items-center gap-6 mb-6 border-b-4 border-slate-200 pb-4 shrink-0">
+                <i data-lucide="book-open" class="w-16 h-16 text-rose-800"></i>
+                <h2 class="text-6xl font-bold text-slate-800">Fundamentos Analíticos</h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-12 flex-1 min-h-0 items-center">
+                <div class="space-y-6 h-full flex flex-col justify-center">
+                    
+                    <div class="glass-card p-8 rounded-2xl border-l-8 border-rose-500 shadow-sm flex flex-col justify-center mb-4">
+                        <p class="text-3xl font-bold text-slate-900 mb-2">Definición de Diferencia ($d$)</p>
+                        <p class="text-xl text-slate-700 leading-relaxed mb-4">
+                            Una sucesión es aritmética si y sólo si el delta algebraico entre todo término consecutivo es constante.
+                        </p>
+                        <div class="text-4xl font-bold font-mono text-center text-rose-800 bg-rose-50 p-4 rounded-xl border-2 border-rose-100">
+                            $$d = a_{n+1} - a_n$$
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 p-8 rounded-2xl border-l-8 border-indigo-600 shadow-sm flex flex-col justify-center">
+                        <p class="text-3xl font-bold text-indigo-900 mb-2">Fórmula Analítica de P.A.</p>
+                        <p class="text-xl text-slate-700 leading-relaxed mb-4">
+                            Cualquier término de la sucesión ($a_n$) se puede proyectar conociendo exclusivamente el punto de inicio ($a_1$) y la diferencia ($d$).
+                        </p>
+                        <div class="text-4xl font-bold font-mono text-center text-indigo-800 bg-white p-4 rounded-xl border-2 border-indigo-100">
+                            $$a_n = a_1 + (n - 1)d$$
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="h-full w-full flex flex-col justify-center bg-white rounded-3xl border-2 border-slate-200 p-8 shadow-lg space-y-8">
+                    <h3 class="text-3xl font-bold text-slate-500 mb-4 tracking-widest uppercase text-center border-b-2 border-slate-100 pb-4">Deconstrucción del Crecimiento</h3>
+                    
+                    <div class="space-y-4 text-2xl font-mono text-slate-800 antialiased p-6 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="grid grid-cols-12 gap-2 items-center">
+                            <div class="col-span-2 text-right text-rose-700 font-bold">$a_1$</div>
+                            <div class="col-span-1 text-center">$=$</div>
+                            <div class="col-span-9">$a_1$</div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-2 items-center">
+                            <div class="col-span-2 text-right text-rose-700 font-bold">$a_2$</div>
+                            <div class="col-span-1 text-center">$=$</div>
+                            <div class="col-span-9">$a_1 + \textbf{1} \cdot d$</div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-2 items-center">
+                            <div class="col-span-2 text-right text-rose-700 font-bold">$a_3$</div>
+                            <div class="col-span-1 text-center">$=$</div>
+                            <div class="col-span-9">$a_1 + d + d = a_1 + \textbf{2} \cdot d$</div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-2 items-center text-slate-400 my-2">
+                            <div class="col-span-2 text-right">$\dots$</div>
+                            <div class="col-span-1 text-center"></div>
+                            <div class="col-span-9">$\dots$</div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-2 items-center border-t-2 border-slate-300 pt-4">
+                            <div class="col-span-2 text-right text-indigo-700 font-bold">$a_n$</div>
+                            <div class="col-span-1 text-center">$=$</div>
+                            <div class="col-span-9">$a_1 + \textbf{(n - 1)} \cdot d$</div>
+                        </div>
+                    </div>
+                    <p class="text-center text-lg text-slate-600 italic">Notemos que el múltiplo de $d$ es siempre una unidad menor respecto a la posición $n$.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 4: Yo Hago -->
+        <div class="slide bg-white p-10">
+            <div class="flex items-center gap-6 mb-4 border-b-4 border-slate-100 pb-2 shrink-0">
+                <i class="w-14 h-14 text-rose-800" data-lucide="brain-circuit"></i>
+                <h2 class="text-5xl font-bold text-slate-800">Sistemas y Fórmulas (Modelaje)</h2>
+            </div>
+
+            <div class="flex flex-col gap-4 shrink-0 mb-4 bg-slate-50 p-8 rounded-3xl border-2 border-slate-200">
+                <p class="text-2xl font-medium text-slate-800 leading-relaxed border-l-4 border-slate-400 pl-6 italic">
+                    "En una progresión aritmética rigurosa, se desconoce el origen. Sin embargo, sabemos que el tercer término es $12$ ($a_3 = 12$) y el séptimo término es $28$ ($a_7 = 28$). Indique cuál es el término general $a_n$ de dicha progresión."
+                </p>
+                <div class="flex justify-center gap-4 mt-6">
+                    <button onclick="revelarElemento('yo-hago-1'); document.getElementById('btn-yo-hago-2').classList.remove('hidden'); document.getElementById('btn-yo-hago-2').classList.add('inline-flex');" class="px-6 py-3 bg-slate-800 text-white rounded-xl text-xl font-bold hover:bg-slate-700 transition shadow-lg w-max">1. Sistema Deducido</button>
+                    <button id="btn-yo-hago-2" onclick="revelarElemento('yo-hago-2'); document.getElementById('btn-yo-hago-3').classList.remove('hidden'); document.getElementById('btn-yo-hago-3').classList.add('inline-flex');" class="hidden px-6 py-3 bg-indigo-700 text-white rounded-xl text-xl font-bold hover:bg-indigo-600 transition shadow-lg w-max">2. Despeje Paramétrico</button>
+                    <button id="btn-yo-hago-3" onclick="revelarElemento('yo-hago-3')" class="hidden px-6 py-3 bg-rose-800 text-white rounded-xl text-xl font-bold hover:bg-rose-700 transition shadow-lg w-max">3. Término General</button>
+                </div>
+            </div>
+
+            <div class="flex-1 min-h-0 flex gap-6">
+                <!-- Paso 1 -->
+                <div id="yo-hago-1" class="hidden flex-col bg-slate-100 p-6 rounded-2xl border-l-8 border-slate-700 shadow-sm flex-1">
+                    <p class="text-2xl font-bold text-slate-800 mb-4">1. Ecuaciones Base</p>
+                    <p class="text-lg text-slate-700 mb-2">Usamos $a_n = a_1 + (n-1)d$</p>
+                    <div class="text-2xl font-mono text-center bg-white p-4 rounded border mb-2">\begin{cases} a_3 = a_1 + 2d = 12 \\ a_7 = a_1 + 6d = 28 \end{cases}</div>
+                </div>
+                
+                <!-- Paso 2 -->
+                <div id="yo-hago-2" class="hidden flex-col bg-indigo-50 p-6 rounded-2xl border-l-8 border-indigo-500 shadow-sm flex-[1.2]">
+                    <p class="text-2xl font-bold text-indigo-900 mb-4">2. Resolución por Resta</p>
+                    <p class="text-lg text-slate-700 mb-2">Restamos las ecuaciones (abajo - arriba):</p>
+                    <div class="text-xl font-mono text-center bg-white p-4 rounded border mb-2">
+                        $$ (a_1 + 6d) - (a_1 + 2d) = 28 - 12 $$
+                        $$ 4d = 16 \implies \mathbf{d = 4} $$
+                    </div>
+                    <p class="text-lg text-slate-700 mb-2 mt-2">Buscamos $a_1$ sustituyendo $d=4$:</p>
+                    <div class="text-xl font-mono text-center bg-white p-2 rounded border">
+                        $$ a_1 + 2(4) = 12 \implies \mathbf{a_1 = 4} $$
+                    </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div id="yo-hago-3" class="hidden flex-col bg-rose-50 p-6 rounded-2xl border-l-8 border-rose-600 shadow-sm flex-[1.2] justify-center items-center text-center">
+                    <p class="text-2xl font-bold text-rose-900 mb-4">3. Montaje del $a_n$</p>
+                    <p class="text-lg text-slate-700 mb-4">Ensamblamos usando el teorema general:</p>
+                    <div class="text-3xl font-mono text-rose-900 font-bold mb-4">
+                        $$ a_n = 4 + (n-1)(4) $$
+                        $$ a_n = 4 + 4n - 4 $$
+                    </div>
+                    <div class="text-4xl font-mono font-bold text-white bg-rose-800 py-3 px-6 rounded-xl shadow-lg w-full">
+                        $$ a_n = 4n $$
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 5: Práctica -->
+        <div class="slide bg-slate-50 p-8">
+            <div class="flex items-center gap-6 border-b-4 border-slate-200 pb-2 shrink-0">
+                <i data-lucide="edit-3" class="w-12 h-12 text-rose-800"></i>
+                <h2 class="text-4xl font-bold text-slate-800">Práctica: Identificación y Proyección</h2>
+            </div>
+
+            <div class="flex flex-col flex-1 min-h-0 space-y-4 mt-2">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm shrink-0">
+                    <p class="text-lg font-medium text-slate-800 text-center">
+                        <strong class="text-rose-700">Analice, aísle $a_1$ y $d$, y determine la información exigida de manera analítica y exhaustiva.</strong>
+                    </p>
+                </div>
+
+                <div class="scrollable-content flex-1 min-h-0 overflow-y-auto pr-3 pb-2 rounded-lg">
+                    <div class="grid grid-cols-3 gap-6">
+
+                        <!-- Grupo A -->
+                        <div class="flex flex-col gap-3">
+                            <div class="bg-slate-700 text-white p-3 rounded-t-xl text-center font-bold tracking-widest uppercase shadow">
+                                Grupo A: Elementos Básicos
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 mb-2">A1</span> 
+                                <span class="text-lg text-slate-800">Encuentra $a_1$ y $d$ en: $10, 14, 18, 22 \dots$</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 mb-2">A2</span> 
+                                <span class="text-lg text-slate-800">Encuentra $a_1$ y $d$ en: $2, -3, -8, -13 \dots$</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 mb-2">A3</span> 
+                                <span class="text-lg text-slate-800">Encuentra el $5^{\circ}$ término si $a_1=5$ y $d=3$.</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-slate-400 mb-2">A4</span> 
+                                <span class="text-lg text-slate-800">Proyecta $a_{10}$ si P.A. es: $1, 6, 11 \dots$</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm border-b-4 border-slate-700">
+                                <span class="font-bold text-slate-400 mb-2">A5</span> 
+                                <span class="text-lg text-slate-800">¿Es $a_n = 3n + 2$ una P.A.? Justifica.</span>
+                            </div>
+                        </div>
+
+                        <!-- Grupo B -->
+                        <div class="flex flex-col gap-3">
+                            <div class="bg-indigo-700 text-white p-3 rounded-t-xl text-center font-bold tracking-widest uppercase shadow">
+                                Grupo B: Términos Generales
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-indigo-300 mb-2">B1</span> 
+                                <span class="text-lg text-slate-800">Encuentra $a_n$ de la serie: $-4, 1, 6, 11 \dots$</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-indigo-300 mb-2">B2</span> 
+                                <span class="text-lg text-slate-800">Encuentra $a_n$ de: $\frac{1}{2}, 1, \frac{3}{2}, 2 \dots$</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-indigo-300 mb-2">B3</span> 
+                                <span class="text-lg text-slate-800">¿Qué término ($n$) vale $88$ si $a_n = 3n+1$?</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-indigo-300 mb-2">B4</span> 
+                                <span class="text-lg text-slate-800">¿Qué término vale $-12$ si $a_1=8, d=-2$?</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm border-b-4 border-indigo-700">
+                                <span class="font-bold text-indigo-300 mb-2">B5</span> 
+                                <span class="text-lg text-slate-800">Demuestra algebraicamente que $a_n = n^2$ NO es P.A.</span>
+                            </div>
+                        </div>
+
+                        <!-- Grupo C -->
+                        <div class="flex flex-col gap-3">
+                            <div class="bg-rose-700 text-white p-3 rounded-t-xl text-center font-bold tracking-widest uppercase shadow">
+                                Grupo C: Ingeniería y Ecuaciones
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 mb-2">C1</span> 
+                                <span class="text-lg text-slate-800">Si $a_3=10$ y $a_6=19$. Encuentra $a_1, d$.</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 mb-2">C2</span> 
+                                <span class="text-lg text-slate-800">Si $a_5=2$ y $a_{10}=-13$. Encuentra $a_n$.</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 mb-2">C3</span> 
+                                <span class="text-lg text-slate-800">El cuarto término de una P.A. vale $x$, el quinto vale $x+3$. ¿Cuánto vale $d$?</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm">
+                                <span class="font-bold text-rose-300 mb-2">C4</span> 
+                                <span class="text-lg text-slate-800 text-base">Halla el valor de $x$ para que $x+1$, $3x$, $4x+2$ estén en progresión aritmética.</span>
+                            </div>
+                            <div class="glass-card p-4 rounded-lg flex flex-col justify-between shadow-sm border-b-4 border-rose-700">
+                                <span class="font-bold text-rose-300 mb-2">C5</span> 
+                                <span class="text-lg text-slate-800">Halla $a_{20}$ de la P.A. en que la suma de sus 3 primeros términos es $30$ y $a_3=13$.</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositiva 6: Ticket Salida -->
+        <div class="slide bg-white p-10">
+            <div class="flex items-center gap-6 mb-8 border-b-4 border-slate-100 pb-4 shrink-0">
+                <i data-lucide="award" class="w-16 h-16 text-rose-800"></i>
+                <h2 class="text-6xl font-bold text-slate-800">Ticket PAES M2 (Ingeniería Inversa)</h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-16 flex-1 min-h-0 items-center">
+                <div class="space-y-10 pr-6">
+                    <div class="p-10 bg-slate-50 border-2 border-slate-200 rounded-3xl shadow-sm">
+                        <p class="text-2xl font-medium text-slate-800 leading-relaxed mb-6">
+                            Las escalas de compensaciones de una empresa se rijen por una progresión aritmética estricta. Un empleado percibe como bono en su sexto año ($a_6$) un monto de $\$50.000$, y un veterano en su undécimo año ($a_{11}$) recibe $\$75.000$.
+                        </p>
+                        <p class="text-2xl font-medium text-slate-700 leading-relaxed mt-6">
+                            Bajo las leyes de la progresión aritmética, ¿cuál fue el bono otorgado durante el <strong class="text-slate-900">primer año</strong> ($a_1$) y cuál es el factor incrementador anual ($d$)?
+                        </p>
+                    </div>
+                    <div class="space-y-6 text-2xl font-bold text-slate-700 pl-6 leading-relaxed flex flex-col justify-center">
+                        <p id="alt-a" class="p-3 hover:bg-slate-100 rounded-lg transition-all cursor-pointer border-2 border-transparent">A) a₁ = $25.000 ; d = $5.000</p>
+                        <p class="p-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border-2 border-transparent">B) a₁ = $30.000 ; d = $4.000</p>
+                        <p class="p-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border-2 border-transparent">C) a₁ = $25.000 ; d = $4.166</p>
+                        <p class="p-3 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border-2 border-transparent">D) a₁ = $20.000 ; d = $5.000</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col h-full justify-center space-y-10">
+                    <button onclick="revelarElemento('respuesta-paes'); document.getElementById('alt-a').classList.remove('border-transparent'); document.getElementById('alt-a').classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-800');"
+                        class="px-10 py-6 bg-rose-800 text-white rounded-2xl text-4xl font-bold hover:bg-rose-900 transition shadow-xl w-full">
+                        Evaluar Sistemas de Progresión
+                    </button>
+
+                    <div id="respuesta-paes"
+                        class="hidden flex-1 glass-card p-8 rounded-3xl border-4 border-emerald-500 bg-emerald-50 text-center flex flex-col justify-center shadow-lg">
+                        <h3 class="text-4xl font-extrabold text-slate-900 mb-4 flex justify-center items-center gap-6">
+                            <i data-lucide="check-circle" class="w-12 h-12 text-emerald-600"></i> Alternativa A
+                        </h3>
+                        <div class="text-lg text-slate-800 space-y-4 text-left pl-6 border-l-8 border-emerald-400 ml-4 font-mono">
+                            <p class="leading-relaxed">Planteamos el sistema estructural:
+                                <br>1. $$a_1 + 5d = 50.000$$
+                                <br>2. $$a_1 + 10d = 75.000$$
+                            </p>
+                            <p class="border-t-2 border-emerald-200 pt-2 leading-relaxed font-sans">Restando la ecuación (2) con (1):</p>
+                            <p> $$(a_1 + 10d) - (a_1 + 5d) = 75.000 - 50.000$$
+                                <br>$$5d = 25.000 \implies \mathbf{d = 5.000}$$
+                            </p>
+                            <p class="border-t-2 border-emerald-200 pt-2 leading-relaxed font-sans mt-2">Reemplazando en $a_6$ para descubrir $a_1$:</p>
+                            <p> $$a_1 + 5(5.000) = 50.000$$
+                                <br>$$a_1 + 25.000 = 50.000 \implies \mathbf{a_1 = 25.000}$$
+                            </p>
+                            <p class="font-sans text-sm italic mt-2 text-rose-800">* La alternativa B mezcla incorrectamente el despeje de suma, la alternativa C intenta una división directa 25000/6 obviando que de $a_6$ a $a_{11}$ hay $5d$.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="h-20 w-full shrink-0 flex justify-between items-center px-12 bg-white border-t-2 border-slate-200 z-50">
+        <div class="text-slate-500 font-bold text-xl tracking-widest uppercase">
+            Límites, Derivadas e Integrales • IVº Medio
+        </div>
+        <div class="flex gap-6">
+            <button onclick="changeSlide(-1)" class="p-4 rounded-full bg-slate-100 border border-slate-300 shadow-md hover:bg-slate-200 transition-all"><i data-lucide="chevron-left" class="w-8 h-8 text-slate-800"></i></button>
+            <button onclick="changeSlide(1)" class="p-4 rounded-full bg-rose-800 text-white shadow-lg hover:bg-rose-900 transition-all"><i data-lucide="chevron-right" class="w-8 h-8"></i></button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function updateSlide() {
+            slides.forEach((s, i) => {
+                s.classList.remove('active');
+                if (i === currentSlide) s.classList.add('active');
+            });
+        }
+
+        function changeSlide(d) {
+            const n = currentSlide + d;
+            if (n >= 0 && n < slides.length) { currentSlide = n; updateSlide(); }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowRight', 'Space', 'Enter'].includes(e.key)) changeSlide(1);
+            if (['ArrowLeft', 'Backspace'].includes(e.key)) changeSlide(-1);
+        });
+
+        function revelarElemento(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                if (!el.classList.contains('flex') && !el.classList.contains('block')) {
+                    el.classList.add('flex');
+                }
+                if (window.MathJax) {
+                    MathJax.typesetPromise([el]).catch((err) => console.log(err.message));
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
